@@ -22,6 +22,7 @@ test('help lists the core commands', () => {
   assert.match(ui.output.join('\n'), /unload/);
   assert.match(ui.output.join('\n'), /restart/);
   assert.match(ui.output.join('\n'), /status/);
+  assert.equal(ui.output.at(-1), '');
 });
 
 test('status reports the service state', () => {
