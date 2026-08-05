@@ -15,7 +15,7 @@
     "README.md"
   ],
   "scripts": {
-    "check": "node --check bin/t3serve.js && node --check scripts/postinstall.js && node --check src/cli.js && node --check src/platform.js && node --check src/service.js && node --check src/ui.js",
+    "check": "node --check bin/t3serve.js && node --check scripts/postinstall.js && node --check src/cli.js && node --check src/platform.js && node --check src/service.js && node --check src/startup.js && node --check src/ui.js",
     "postinstall": "node scripts/postinstall.js",
     "test": "node --test"
   },

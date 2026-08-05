@@ -25,5 +25,29 @@ export const ui = {
   },
   error(message) {
     console.error(`${red('✗')} ${message}`);
+  },
+  spinner(message) {
+    const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    let frame = 0;
+    let timer;
+
+    if (process.stdout.isTTY) {
+      process.stdout.write(`${cyan(frames[frame])} ${message}`);
+      timer = setInterval(() => {
+        frame = (frame + 1) % frames.length;
+        process.stdout.write(`\r\u001b[2K${cyan(frames[frame])} ${message}`);
+      }, 80);
+      timer.unref();
+    } else {
+      console.log(`${cyan('○')} ${message}`);
+    }
+
+    return {
+      stop() {
+        if (!timer) return;
+        clearInterval(timer);
+        process.stdout.write('\r\u001b[2K');
+      }
+    };
   }
 };
