@@ -3,6 +3,8 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+import { getUnsupportedPlatformMessage } from './platform.js';
+
 export const SERVICE_LABEL = 't3serve';
 
 export class ServiceError extends Error {}
@@ -86,9 +88,8 @@ export class T3Service {
   }
 
   assertSupported() {
-    if (this.platform !== 'darwin') {
-      throw new ServiceError('t3serve currently supports macOS only.');
-    }
+    const message = getUnsupportedPlatformMessage(this.platform);
+    if (message) throw new ServiceError(message);
   }
 
   inspect() {
