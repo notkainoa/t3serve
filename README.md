@@ -1,6 +1,6 @@
 # t3serve
 
-Keep `npx t3@nightly serve` running on macOS.
+Run T3 Code in the background 24/7 on macOS.
 
 `t3serve` creates a small per-user macOS service for `npx t3@nightly serve`.
 It starts when you log in, restarts if it crashes, and stays out of the way.
@@ -9,22 +9,21 @@ It starts when you log in, restarts if it crashes, and stays out of the way.
 
 ```sh
 npm i -g t3-serve
-t3serve load
+t3-serve load
 ```
 
 `load` sets up the service and starts the server. You only need it once, or
 again after running `unload`.
 
-While the server starts, t3serve waits with a small spinner in interactive
-terminals and then shows its localhost address, a fresh pair token, the
-complete pairing URL, and whether T3 Connect is connected. `start` shows the
+t3-serve will shows t3code's localhost address, fresh pair token, the
+complete pairing URL, and whether T3 Connect is connected, in a nicer format then just the output of npx t3. `start` shows the
 same connection details.
 
 Both command names work:
 
 ```sh
-t3serve status
 t3-serve status
+t3serve status
 ```
 
 ## Commands
@@ -32,10 +31,10 @@ t3-serve status
 ```text
 t3serve load         Set up and start the service
 t3serve unload       Stop and remove the service
-t3serve start        Start the server
-t3serve stop         Stop the server
+t3serve start        Start the server (if service is already loaded)
+t3serve stop         Stop the server (but keeps service loaded, just not running)
 t3serve restart      Restart the server
-t3serve status       Show the server status
+t3serve status       Show the status of the server and service
 t3serve help         Show help
 ```
 
@@ -75,23 +74,23 @@ tail -f ~/Library/Logs/t3serve.log
 - macOS
 - Node.js 18 or newer
 
-`t3serve` checks your operating system during installation and stops with a
-clear message when it is not running on macOS.
-
-On Linux with systemd, use T3 Code's built-in background service instead:
+On Linux you can use T3 Code's built-in background service instead:
 
 ```sh
 npx t3@latest service install
 ```
 
-See the [T3 Code background service documentation](https://github.com/pingdotgg/t3code/blob/main/docs/user/background-service.md)
+See the [T3 Code background service docs](https://github.com/pingdotgg/t3code/blob/main/docs/user/background-service.md)
 for status, updates, and removal instructions.
 
 ## Development
 
 ```sh
+cd [t3-serve repo path]
 npm test
 npm run check
+npm I -g .
+npm uninstall -g t3-serve
 ```
 
 ## License
