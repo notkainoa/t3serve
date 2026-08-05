@@ -1,5 +1,5 @@
 {
-  "name": "t3serve",
+  "name": "t3-serve",
   "version": "0.1.0",
   "description": "Keep the T3 CLI server running on macOS.",
   "type": "module",

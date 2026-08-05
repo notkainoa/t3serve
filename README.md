@@ -8,7 +8,7 @@ It starts when you log in, restarts if it crashes, and stays out of the way.
 ## Get started
 
 ```sh
-npm i -g t3serve
+npm i -g t3-serve
 t3serve load
 ```
 
