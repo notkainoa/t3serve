@@ -16,6 +16,7 @@ function showHelp(ui) {
   ui.line(`  ${cyan('restart')}      Restart the server`);
   ui.line(`  ${cyan('status')}       Show the server status`);
   ui.line(`  ${cyan('help')}         Show this help`);
+  ui.line();
 }
 
 function reportStatus(status, ui) {
