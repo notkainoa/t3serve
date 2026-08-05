@@ -12,6 +12,25 @@ function defaultSleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+export function isLiveRuntimeState(state, kill = process.kill) {
+  if (
+    state === null ||
+    typeof state !== 'object' ||
+    state.version !== 1 ||
+    !Number.isSafeInteger(state.pid) ||
+    state.pid <= 0
+  ) {
+    return false;
+  }
+
+  try {
+    kill(state.pid, 0);
+    return true;
+  } catch (error) {
+    return error instanceof Error && 'code' in error && error.code === 'EPERM';
+  }
+}
+
 async function defaultRuntimeReady(path) {
   let state;
   try {
@@ -20,13 +39,7 @@ async function defaultRuntimeReady(path) {
     return false;
   }
 
-  if (state.version !== 1 || !Number.isInteger(state.pid)) return false;
-  try {
-    process.kill(state.pid, 0);
-    return true;
-  } catch (error) {
-    return error instanceof Error && 'code' in error && error.code === 'EPERM';
-  }
+  return isLiveRuntimeState(state);
 }
 
 async function defaultRunT3(args, { timeout = 30_000 } = {}) {

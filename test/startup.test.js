@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  isLiveRuntimeState,
   parseConnectStatus,
   parsePairOutput,
   T3StartupInspector
@@ -14,6 +15,36 @@ Token: PAIRCODE
 Expires: 2026-08-04T20:00:00.000Z
 `;
 const runtimeReady = async () => true;
+
+test('runtime state requires a live positive safe-integer PID', () => {
+  const malformed = [
+    null,
+    'state',
+    [],
+    {},
+    { version: 1, pid: 0 },
+    { version: 1, pid: -1 },
+    { version: 1, pid: Number.MAX_SAFE_INTEGER + 1 }
+  ];
+
+  for (const state of malformed) {
+    assert.equal(isLiveRuntimeState(state, () => {}), false);
+  }
+
+  assert.equal(isLiveRuntimeState({ version: 1, pid: 123 }, () => {}), true);
+  assert.equal(
+    isLiveRuntimeState({ version: 1, pid: 123 }, () => {
+      throw Object.assign(new Error('not permitted'), { code: 'EPERM' });
+    }),
+    true
+  );
+  assert.equal(
+    isLiveRuntimeState({ version: 1, pid: 123 }, () => {
+      throw Object.assign(new Error('missing'), { code: 'ESRCH' });
+    }),
+    false
+  );
+});
 
 test('pair output becomes local connection details', () => {
   assert.deepEqual(parsePairOutput(pairOutput), {
