@@ -6,6 +6,15 @@ import test from 'node:test';
 
 import { createPlist, T3Service } from '../src/service.js';
 
+test('Linux runtime errors point to the built-in T3 Code service', () => {
+  const service = new T3Service({ platform: 'linux' });
+
+  assert.throws(
+    () => service.status(),
+    /npx t3@latest service install/
+  );
+});
+
 test('the plist runs t3@nightly from the home directory', () => {
   const plist = createPlist({
     home: '/Users/Test & Co',

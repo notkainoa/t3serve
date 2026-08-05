@@ -70,6 +70,18 @@ tail -f ~/Library/Logs/t3serve.log
 - macOS
 - Node.js 18 or newer
 
+`t3serve` checks your operating system during installation and stops with a
+clear message when it is not running on macOS.
+
+On Linux with systemd, use T3 Code's built-in background service instead:
+
+```sh
+npx t3@latest service install
+```
+
+See the [T3 Code background service documentation](https://github.com/pingdotgg/t3code/blob/main/docs/user/background-service.md)
+for status, updates, and removal instructions.
+
 ## Development
 
 ```sh
