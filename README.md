@@ -15,9 +15,10 @@ t3serve load
 `load` sets up the service and starts the server. You only need it once, or
 again after running `unload`.
 
-While the server starts, t3serve waits with a small spinner and then shows its
-localhost address, a fresh pair token, the complete pairing URL, and whether
-T3 Connect is connected. `start` shows the same connection details.
+While the server starts, t3serve waits with a small spinner in interactive
+terminals and then shows its localhost address, a fresh pair token, the
+complete pairing URL, and whether T3 Connect is connected. `start` shows the
+same connection details.
 
 Both command names work:
 
