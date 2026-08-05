@@ -19,7 +19,7 @@ test('the plist runs t3@nightly from the home directory', () => {
   assert.match(plist, /<key>\/Users\/Test &amp; Co\/.t3serve-enabled<\/key>/);
 });
 
-test('install writes the service and asks launchd to load it', () => {
+test('load writes the service and asks launchd to load it', () => {
   const home = mkdtempSync(join(tmpdir(), 't3serve-'));
   const calls = [];
   const launchctl = (args) => {
@@ -30,7 +30,7 @@ test('install writes the service and asks launchd to load it', () => {
   const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
 
   try {
-    service.install();
+    service.load();
 
     assert.match(readFileSync(service.plistPath, 'utf8'), /t3@nightly/);
     assert.deepEqual(calls.at(-1), ['bootstrap', 'gui/501', service.plistPath]);
