@@ -107,9 +107,9 @@ export class T3Service {
     return state === 'running' || state === 'xpcproxy';
   }
 
-  ensureInstalled() {
+  ensureLoaded() {
     if (!existsSync(this.plistPath)) {
-      throw new ServiceError("t3serve is not installed — run 't3serve install' first.");
+      throw new ServiceError("t3serve is not loaded — run 't3serve load' first.");
     }
   }
 
@@ -120,13 +120,22 @@ export class T3Service {
     }
   }
 
-  install() {
+  startLoadedService(current, noOpResult) {
+    if (existsSync(this.markerPath) && this.isRunning(current.state)) {
+      return noOpResult;
+    }
+
+    writeFileSync(this.markerPath, '');
+    this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
+    return 'started';
+  }
+
+  load() {
     this.assertSupported();
     const current = this.inspect();
 
     if (current.loaded) {
-      rmSync(this.markerPath, { force: true });
-      this.run(['bootout', this.target], 'Could not reload the t3 server service.');
+      return this.startLoadedService(current, 'already-loaded');
     }
 
     mkdirSync(this.launchAgentsDirectory, { recursive: true });
@@ -134,9 +143,10 @@ export class T3Service {
     writeFileSync(this.markerPath, '');
     writeFileSync(this.plistPath, createPlist(this), { mode: 0o644 });
     this.run(['bootstrap', this.domain, this.plistPath], 'Could not load the t3 server service.');
+    return 'loaded';
   }
 
-  uninstall() {
+  unload() {
     this.assertSupported();
     const current = this.inspect();
 
@@ -147,44 +157,15 @@ export class T3Service {
     rmSync(this.plistPath, { force: true });
   }
 
-  load() {
-    this.assertSupported();
-    this.ensureInstalled();
-    const current = this.inspect();
-
-    if (current.loaded) return 'already-loaded';
-
-    writeFileSync(this.markerPath, '');
-    this.run(['bootstrap', this.domain, this.plistPath], 'Could not load the t3 server service.');
-    return 'started';
-  }
-
-  unload() {
-    this.assertSupported();
-    const current = this.inspect();
-
-    rmSync(this.markerPath, { force: true });
-    if (!current.loaded) return 'already-not-loaded';
-
-    this.run(['bootout', this.target], 'Could not unload the t3 server service.');
-    return 'stopped';
-  }
-
   start() {
     this.assertSupported();
-    this.ensureInstalled();
+    this.ensureLoaded();
     const current = this.inspect();
 
     if (!current.loaded) {
       throw new ServiceError("t3 server is not loaded — run 't3serve load' first.");
     }
-    if (existsSync(this.markerPath) && this.isRunning(current.state)) {
-      return 'already-running';
-    }
-
-    writeFileSync(this.markerPath, '');
-    this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
-    return 'started';
+    return this.startLoadedService(current, 'already-running');
   }
 
   stop() {

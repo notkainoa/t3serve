@@ -8,12 +8,10 @@ function showHelp(ui) {
   ui.line();
   ui.line(`  ${bold('Usage')}  t3serve ${cyan('<command>')}`);
   ui.line();
-  ui.line(`  ${cyan('install')}      Install, load, and start the service`);
-  ui.line(`  ${cyan('uninstall')}    Stop and remove the service`);
-  ui.line(`  ${cyan('load')}         Load and start the service`);
-  ui.line(`  ${cyan('unload')}       Stop and unload the service`);
-  ui.line(`  ${cyan('start')}        Start without loading the service`);
-  ui.line(`  ${cyan('stop')}         Stop without unloading the service`);
+  ui.line(`  ${cyan('load')}         Set up and start the service`);
+  ui.line(`  ${cyan('unload')}       Stop and remove the service`);
+  ui.line(`  ${cyan('start')}        Start the server`);
+  ui.line(`  ${cyan('stop')}         Stop the server`);
   ui.line(`  ${cyan('restart')}      Restart the server`);
   ui.line(`  ${cyan('status')}       Show the server status`);
   ui.line(`  ${cyan('help')}         Show this help`);
@@ -44,26 +42,16 @@ export function runCli(args, { service = new T3Service(), ui = defaultUi } = {})
 
   try {
     switch (command) {
-      case 'install':
-        service.install();
-        ui.success(`t3 server: ${bold('installed and running')}`);
-        break;
-      case 'uninstall':
-        service.uninstall();
-        ui.warning(`t3 server: ${bold('uninstalled')}`);
-        break;
       case 'load': {
         const result = service.load();
         if (result === 'already-loaded') ui.info('t3 server: already loaded');
-        else ui.success(`t3 server: ${bold('started')}`);
+        else ui.success(`t3 server: ${bold('loaded and running')}`);
         break;
       }
-      case 'unload': {
-        const result = service.unload();
-        if (result === 'already-not-loaded') ui.info('t3 server: already not loaded');
-        else ui.warning(`t3 server: ${bold('stopped')}`);
+      case 'unload':
+        service.unload();
+        ui.warning(`t3 server: ${bold('unloaded')}`);
         break;
-      }
       case 'start': {
         const result = service.start();
         if (result === 'already-running') ui.info('t3 server: already running');

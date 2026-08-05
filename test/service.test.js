@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -19,7 +19,7 @@ test('the plist runs t3@nightly from the home directory', () => {
   assert.match(plist, /<key>\/Users\/Test &amp; Co\/.t3serve-enabled<\/key>/);
 });
 
-test('install writes the service and asks launchd to load it', () => {
+test('load writes the service and asks launchd to load it', () => {
   const home = mkdtempSync(join(tmpdir(), 't3serve-'));
   const calls = [];
   const launchctl = (args) => {
@@ -30,11 +30,50 @@ test('install writes the service and asks launchd to load it', () => {
   const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
 
   try {
-    service.install();
+    assert.equal(service.load(), 'loaded');
 
     assert.match(readFileSync(service.plistPath, 'utf8'), /t3@nightly/);
     assert.deepEqual(calls.at(-1), ['bootstrap', 'gui/501', service.plistPath]);
     assert.equal(service.status(), 'not-loaded');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('load is a no-op when the service is already enabled and running', () => {
+  const home = mkdtempSync(join(tmpdir(), 't3serve-'));
+  const calls = [];
+  const launchctl = (args) => {
+    calls.push(args);
+    return { ok: true, stdout: 'state = running', stderr: '' };
+  };
+  const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
+
+  try {
+    writeFileSync(service.markerPath, '');
+    assert.equal(service.load(), 'already-loaded');
+    assert.deepEqual(calls, [['print', 'gui/501/t3serve']]);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('load starts a service that is loaded but stopped', () => {
+  const home = mkdtempSync(join(tmpdir(), 't3serve-'));
+  const calls = [];
+  const launchctl = (args) => {
+    calls.push(args);
+    return { ok: true, stdout: 'state = waiting', stderr: '' };
+  };
+  const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
+
+  try {
+    assert.equal(service.load(), 'started');
+    assert.equal(existsSync(service.markerPath), true);
+    assert.deepEqual(calls, [
+      ['print', 'gui/501/t3serve'],
+      ['kickstart', '-k', 'gui/501/t3serve']
+    ]);
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
