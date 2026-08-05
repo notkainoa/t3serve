@@ -30,7 +30,7 @@ test('load writes the service and asks launchd to load it', () => {
   const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
 
   try {
-    service.load();
+    assert.equal(service.load(), 'loaded');
 
     assert.match(readFileSync(service.plistPath, 'utf8'), /t3@nightly/);
     assert.deepEqual(calls.at(-1), ['bootstrap', 'gui/501', service.plistPath]);
@@ -39,3 +39,22 @@ test('load writes the service and asks launchd to load it', () => {
     rmSync(home, { recursive: true, force: true });
   }
 });
+
+for (const state of ['running', 'waiting']) {
+  test(`load is a no-op when the service is already ${state}`, () => {
+    const home = mkdtempSync(join(tmpdir(), 't3serve-'));
+    const calls = [];
+    const launchctl = (args) => {
+      calls.push(args);
+      return { ok: true, stdout: `state = ${state}`, stderr: '' };
+    };
+    const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
+
+    try {
+      assert.equal(service.load(), 'already-loaded');
+      assert.deepEqual(calls, [['print', 'gui/501/t3serve']]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+}

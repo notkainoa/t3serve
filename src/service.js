@@ -124,16 +124,14 @@ export class T3Service {
     this.assertSupported();
     const current = this.inspect();
 
-    if (current.loaded) {
-      rmSync(this.markerPath, { force: true });
-      this.run(['bootout', this.target], 'Could not reload the t3 server service.');
-    }
+    if (current.loaded) return 'already-loaded';
 
     mkdirSync(this.launchAgentsDirectory, { recursive: true });
     mkdirSync(this.logsDirectory, { recursive: true });
     writeFileSync(this.markerPath, '');
     writeFileSync(this.plistPath, createPlist(this), { mode: 0o644 });
     this.run(['bootstrap', this.domain, this.plistPath], 'Could not load the t3 server service.');
+    return 'loaded';
   }
 
   unload() {

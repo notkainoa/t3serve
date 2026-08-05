@@ -42,10 +42,12 @@ export function runCli(args, { service = new T3Service(), ui = defaultUi } = {})
 
   try {
     switch (command) {
-      case 'load':
-        service.load();
-        ui.success(`t3 server: ${bold('loaded and running')}`);
+      case 'load': {
+        const result = service.load();
+        if (result === 'already-loaded') ui.info('t3 server: already loaded');
+        else ui.success(`t3 server: ${bold('loaded and running')}`);
         break;
+      }
       case 'unload':
         service.unload();
         ui.warning(`t3 server: ${bold('unloaded')}`);

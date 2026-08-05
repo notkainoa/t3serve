@@ -31,6 +31,13 @@ test('status reports the service state', () => {
   assert.match(ui.output.join('\n'), /running/);
 });
 
+test('load reports an already-loaded service without restarting it', () => {
+  const ui = recordingUi();
+  const service = { load: () => 'already-loaded' };
+  assert.equal(runCli(['load'], { service, ui }), 0);
+  assert.match(ui.output.join('\n'), /already loaded/);
+});
+
 test('unknown commands fail with useful guidance', () => {
   const ui = recordingUi();
   assert.equal(runCli(['wat'], { ui }), 1);
