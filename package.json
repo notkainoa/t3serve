@@ -1,0 +1,31 @@
+{
+  "name": "t3serve",
+  "version": "0.1.0",
+  "description": "Keep the T3 CLI server running on macOS.",
+  "type": "module",
+  "bin": {
+    "t3serve": "bin/t3serve.js",
+    "t3-serve": "bin/t3serve.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "check": "node --check bin/t3serve.js && node --check src/cli.js && node --check src/service.js && node --check src/ui.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "t3",
+    "cli",
+    "launchd",
+    "macos",
+    "service"
+  ],
+  "license": "MIT"
+}
