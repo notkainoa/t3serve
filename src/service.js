@@ -120,18 +120,22 @@ export class T3Service {
     }
   }
 
+  startLoadedService(current, noOpResult) {
+    if (existsSync(this.markerPath) && this.isRunning(current.state)) {
+      return noOpResult;
+    }
+
+    writeFileSync(this.markerPath, '');
+    this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
+    return 'started';
+  }
+
   load() {
     this.assertSupported();
     const current = this.inspect();
 
     if (current.loaded) {
-      if (existsSync(this.markerPath) && this.isRunning(current.state)) {
-        return 'already-loaded';
-      }
-
-      writeFileSync(this.markerPath, '');
-      this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
-      return 'started';
+      return this.startLoadedService(current, 'already-loaded');
     }
 
     mkdirSync(this.launchAgentsDirectory, { recursive: true });
@@ -161,13 +165,7 @@ export class T3Service {
     if (!current.loaded) {
       throw new ServiceError("t3 server is not loaded — run 't3serve load' first.");
     }
-    if (existsSync(this.markerPath) && this.isRunning(current.state)) {
-      return 'already-running';
-    }
-
-    writeFileSync(this.markerPath, '');
-    this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
-    return 'started';
+    return this.startLoadedService(current, 'already-running');
   }
 
   stop() {
