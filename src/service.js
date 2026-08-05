@@ -124,7 +124,15 @@ export class T3Service {
     this.assertSupported();
     const current = this.inspect();
 
-    if (current.loaded) return 'already-loaded';
+    if (current.loaded) {
+      if (existsSync(this.markerPath) && this.isRunning(current.state)) {
+        return 'already-loaded';
+      }
+
+      writeFileSync(this.markerPath, '');
+      this.run(['kickstart', '-k', this.target], 'Could not start the t3 server.');
+      return 'started';
+    }
 
     mkdirSync(this.launchAgentsDirectory, { recursive: true });
     mkdirSync(this.logsDirectory, { recursive: true });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -40,21 +40,41 @@ test('load writes the service and asks launchd to load it', () => {
   }
 });
 
-for (const state of ['running', 'waiting']) {
-  test(`load is a no-op when the service is already ${state}`, () => {
-    const home = mkdtempSync(join(tmpdir(), 't3serve-'));
-    const calls = [];
-    const launchctl = (args) => {
-      calls.push(args);
-      return { ok: true, stdout: `state = ${state}`, stderr: '' };
-    };
-    const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
+test('load is a no-op when the service is already enabled and running', () => {
+  const home = mkdtempSync(join(tmpdir(), 't3serve-'));
+  const calls = [];
+  const launchctl = (args) => {
+    calls.push(args);
+    return { ok: true, stdout: 'state = running', stderr: '' };
+  };
+  const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
 
-    try {
-      assert.equal(service.load(), 'already-loaded');
-      assert.deepEqual(calls, [['print', 'gui/501/t3serve']]);
-    } finally {
-      rmSync(home, { recursive: true, force: true });
-    }
-  });
-}
+  try {
+    writeFileSync(service.markerPath, '');
+    assert.equal(service.load(), 'already-loaded');
+    assert.deepEqual(calls, [['print', 'gui/501/t3serve']]);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('load starts a service that is loaded but stopped', () => {
+  const home = mkdtempSync(join(tmpdir(), 't3serve-'));
+  const calls = [];
+  const launchctl = (args) => {
+    calls.push(args);
+    return { ok: true, stdout: 'state = waiting', stderr: '' };
+  };
+  const service = new T3Service({ home, uid: 501, platform: 'darwin', launchctl });
+
+  try {
+    assert.equal(service.load(), 'started');
+    assert.equal(existsSync(service.markerPath), true);
+    assert.deepEqual(calls, [
+      ['print', 'gui/501/t3serve'],
+      ['kickstart', '-k', 'gui/501/t3serve']
+    ]);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
